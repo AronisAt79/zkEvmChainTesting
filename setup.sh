@@ -13,6 +13,7 @@ docker run -dit -v $wdir:/Code --name gotest golang
 docker exec --workdir /Code/TestCode gotest /Code/go_init.sh  
 
 cd $wdir/zkevm-chain/contracts/build/
+sudo chown -R $user:$user $wdir/*
 
 for i in `ls -p`
     do
