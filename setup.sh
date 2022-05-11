@@ -36,4 +36,4 @@ for i in `find $wdir/TestCode -type d -exec basename {} \;`
 
 docker exec --workdir /Code/TestCode gotest go mod tidy
 
-sudo chown -R $user:$user *
+sudo chown -R $user:$user $wdir/*
