@@ -12,18 +12,19 @@ docker run -v $wdir/zkevm-chain/contracts:/sources ethereum/solc:stable --abi /s
 docker run -dit -v $wdir:/Code --name gotest golang
 docker exec --workdir /Code/TestCode gotest /Code/go_init.sh  
 
-cd $wdir/zkevm-chain/contracts/build/
 sudo chown -R $user:$user $wdir/*
+
+cd $wdir/zkevm-chain/contracts/build/
 
 for i in `ls -p`
     do
         outfile=$(echo $i | sed 's/.abi/.go/g')
         n=$(echo ${i} | sed 's/\.[^ ]*/ /g')
-        nf=$(echo "/Code/TestCode/${n}")
+        nf=$(echo "$wdir/TestCode/${n}")
         mkdir -p $nf
         docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $n --type $n --out $outfile
-        docker exec --workdir /Code gotest mkdir -p $nf 
-        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfile $nf
+        docker exec --workdir /Code/TestCode gotest mkdir -p $n 
+        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfile /Code/TestCode/$n
     done
 
 for i in `find $wdir/TestCode -type d -exec basename {} \;`
