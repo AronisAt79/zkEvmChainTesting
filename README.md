@@ -13,6 +13,7 @@ Instructions:
   #go run . -h to see the possible arguments
 
 or 
+
   #docker exec --workdir /Code/TestCode -it gotest bash
   #go build .
   
