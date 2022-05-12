@@ -20,8 +20,9 @@ for i in `ls -p`
     do
         outfile=$(echo $i | sed 's/.abi/.go/g')
         n=$(echo ${i} | sed 's/\.[^ ]*/ /g')
-        nf=$(echo "$wdir/TestCode/${n}")
-        mkdir -p "${nf,,}"
+        nl=${n,,}
+        nf=$(echo "$wdir/TestCode/${nl}")
+        mkdir -p $nf
         docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $n --type $n --out $outfile
         docker exec --workdir /Code/TestCode gotest mkdir -p $n 
         docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfile /Code/TestCode/"${n,,}"
