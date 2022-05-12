@@ -5,8 +5,9 @@ Prerequisites: a linux machine with docker engine installed
 Instructions:
 
 1. Setup
-  cd into zkEvmChainTesting directory
-  run setup.sh
+
+    cd into zkEvmChainTesting directory
+    run setup.sh
 
 2. Test execution
 
