@@ -19,13 +19,14 @@ cd $wdir/zkevm-chain/contracts/build/
 for i in `ls -p`
     do
         outfile=$(echo $i | sed 's/.abi/.go/g')
+        outfilel=${outfile,,}
         n=$(echo ${i} | sed 's/\.[^ ]*/ /g')
         nl=${n,,}
         nf=$(echo "$wdir/TestCode/${nl}")
         mkdir -p $nf
-        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $n --type $n --out $outfile
-        docker exec --workdir /Code/TestCode gotest mkdir -p $n 
-        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfile /Code/TestCode/"${n,,}"
+        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $n --type $n --out $outfilel
+        docker exec --workdir /Code/TestCode gotest mkdir -p $nl 
+        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfilel /Code/TestCode/$nl
     done
 
 for i in `find $wdir/TestCode -type d -exec basename {} \;`
