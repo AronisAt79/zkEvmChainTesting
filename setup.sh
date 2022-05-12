@@ -21,16 +21,16 @@ for i in `ls -p`
         outfile=$(echo $i | sed 's/.abi/.go/g')
         n=$(echo ${i} | sed 's/\.[^ ]*/ /g')
         nf=$(echo "$wdir/TestCode/${n}")
-        mkdir -p $nf
+        mkdir -p "${nf,,}"
         docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $n --type $n --out $outfile
         docker exec --workdir /Code/TestCode gotest mkdir -p $n 
-        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfile /Code/TestCode/$n
+        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfile /Code/TestCode/"${n,,}"
     done
 
 for i in `find $wdir/TestCode -type d -exec basename {} \;`
     do
         pack=${i,,}
-        echo "replace $pack v1.0.0 => ./$i" >> $wdir/TestCode/go.mod
+        echo "replace $pack v1.0.0 => ./${i,,}" >> $wdir/TestCode/go.mod
 #       echo "replace $pack v1.0.0 => ./$i" >> $wdir/go.mod
     done
 
