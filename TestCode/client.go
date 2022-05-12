@@ -108,7 +108,7 @@ func main() {
 	if initL2Funds {
 
 		bridgeAddress := common.HexToAddress(lOnebridge)
-		bridge, err := l1bridge.NewZkEvmL1Bridge(bridgeAddress, ethcl1)
+		bridge, err := zkevml1bridge.NewZkEvmL1Bridge(bridgeAddress, ethcl1)
 		if err != nil {
 			fmt.Println(err)
 			log.Fatal(err)
