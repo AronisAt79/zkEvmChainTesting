@@ -108,7 +108,7 @@ func main() {
 	if initL2Funds {
 
 		bridgeAddress := common.HexToAddress(lOnebridge)
-		bridge, err := zkevml1bridge.NewZkEvmL1Bridge(bridgeAddress, ethcl1)
+		bridge, err := zkevml1bridge.NewZkevml1bridge(bridgeAddress, ethcl1)
 		if err != nil {
 			fmt.Println(err)
 			log.Fatal(err)
@@ -206,7 +206,7 @@ func main() {
 		}
 
 		bridgeAddress := common.HexToAddress(lTwobridge)
-		bridge, err := zkevmmessagedispatcher.NewZkEvmMessageDispatcher(bridgeAddress, ethcl)
+		bridge, err := zkevmmessagedispatcher.NewZkevmmessagedispatcher(bridgeAddress, ethcl)
 		if err != nil {
 			fmt.Println(err)
 			log.Fatal(err)
@@ -258,7 +258,7 @@ func main() {
 		}
 
 		bridgeAddress := common.HexToAddress(lOnebridge)
-		bridge, err := zkevml1bridge.NewZkEvmL1Bridge(bridgeAddress, ethcl)
+		bridge, err := zkevml1bridge.NewZkevml1bridge(bridgeAddress, ethcl)
 		if err != nil {
 			fmt.Println(err)
 			log.Fatal(err)
