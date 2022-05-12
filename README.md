@@ -9,7 +9,9 @@ Instructions:
   run setup.sh
 
 2. Test execution
+3. 
   #docker exec --workdir /Code/TestCode -it gotest bash
+  
   #go run . -h to see the possible arguments
 
 or 
