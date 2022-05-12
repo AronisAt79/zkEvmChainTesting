@@ -4,7 +4,6 @@ set -x
 
 wdir=$(pwd)
 user=$(id -un 1000)
-#sudo chown -R $user:$user *
 
 git clone https://github.com/appliedzkp/zkevm-chain.git
 
@@ -35,5 +34,6 @@ for i in `find $wdir/TestCode -type d -exec basename {} \;`; do
 done
 
 docker exec --workdir /Code/TestCode gotest go mod tidy
+docker exec --workdir /Code/TestCode gotest go build .
 
 sudo chown -R $user:$user $wdir/*
