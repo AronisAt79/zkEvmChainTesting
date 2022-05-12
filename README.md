@@ -10,15 +10,15 @@ Instructions:
 
 2. Test execution
 
-  #docker exec --workdir /Code/TestCode -it gotest bash
-  
-  #go run . -h to see the possible arguments
+      #docker exec --workdir /Code/TestCode -it gotest bash
 
-or 
+      #go run . -h to see the possible arguments
 
-  #docker exec --workdir /Code/TestCode -it gotest bash
-  #go build .
-  
-  exit container shell
-  
-  #./zkevmchaintest -h
+    or 
+
+      #docker exec --workdir /Code/TestCode -it gotest bash
+      #go build .
+
+      exit container shell
+
+      #./zkevmchaintest -h
