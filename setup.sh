@@ -16,25 +16,23 @@ sudo chown -R $user:$user $wdir/*
 
 cd $wdir/zkevm-chain/contracts/build/
 
-for i in `ls -p`
-    do
-        outfile=$(echo $i | sed 's/.abi/.go/g')
-        outfilel=${outfile,,}
-        n=$(echo ${i} | sed 's/\.[^ ]*/ /g')
-        nl=${n,,}
-        nf=$(echo "$wdir/TestCode/${nl}")
-        mkdir -p $nf
-        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $nl --type $nl --out $outfilel
-        docker exec --workdir /Code/TestCode gotest mkdir -p $nl 
-        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfilel /Code/TestCode/$nl
-    done
+for i in `ls -p`; do
+    outfile=$(echo $i | sed 's/.abi/.go/g')
+    outfilel=${outfile,,}
+    n=$(echo ${i} | sed 's/\.[^ ]*/ /g')
+    nl=${n,,}
+    nf=$(echo "$wdir/TestCode/${nl}")
+    mkdir -p $nf
+    docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $nl --type $nl --out $outfilel
+    docker exec --workdir /Code/TestCode gotest mkdir -p $nl 
+    docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfilel /Code/TestCode/$nl
+done
 
-for i in `find $wdir/TestCode -type d -exec basename {} \;`
-    do
-        pack=${i,,}
-        echo "replace $pack v1.0.0 => ./${i,,}" >> $wdir/TestCode/go.mod
-#       echo "replace $pack v1.0.0 => ./$i" >> $wdir/go.mod
-    done
+for i in `find $wdir/TestCode -type d -exec basename {} \;`; do
+    pack=${i,,}
+    echo "replace $pack v1.0.0 => ./${i,,}" >> $wdir/TestCode/go.mod
+    #echo "replace $pack v1.0.0 => ./$i" >> $wdir/go.mod
+done
 
 docker exec --workdir /Code/TestCode gotest go mod tidy
 
