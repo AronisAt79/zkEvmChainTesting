@@ -24,7 +24,7 @@ for i in `ls -p`
         nl=${n,,}
         nf=$(echo "$wdir/TestCode/${nl}")
         mkdir -p $nf
-        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $n --type $n --out $outfilel
+        docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest abigen --abi $i -pkg $nl --type $nl --out $outfilel
         docker exec --workdir /Code/TestCode gotest mkdir -p $nl 
         docker exec --workdir /Code/zkevm-chain/contracts/build/ gotest cp $outfilel /Code/TestCode/$nl
     done
