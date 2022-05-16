@@ -1,4 +1,5 @@
 # zkEvmChainTesting
+[More Details](https://hackmd.io/WeZhR95VTv2JlBTC0C-P3A?view)
 
 ## Prerequisites: 
  - a linux machine with docker engine installed
