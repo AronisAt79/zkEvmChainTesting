@@ -159,4 +159,6 @@ func main() {
 	//Set of dummy print statements to avoid unused variables error
 
 	fmt.Println(lTwobridge)
+	fmt.Println(ethcl2)
+	fmt.Println(l1ChainId)
 }
