@@ -7,7 +7,7 @@ user=$(id -un 1000)
 
 git clone https://github.com/appliedzkp/zkevm-chain.git
 
-docker run -v $wdir/zkevm-chain/contracts:/sources ethereum/solc:stable --abi /sources/ZkEvmL1Bridge.sol -o /sources/build
+docker run --rm -v $wdir/zkevm-chain/contracts:/sources ethereum/solc:stable --abi /sources/ZkEvmL1Bridge.sol -o /sources/build
 docker run -dit -v $wdir:/Code --name gotest golang
 docker exec --workdir /Code/TestCode gotest /Code/go_init.sh  
 
