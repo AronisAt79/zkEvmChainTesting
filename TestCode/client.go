@@ -96,6 +96,15 @@ func main() {
 
 	fmt.Printf("CLIENT SETUP:\n showBal: %v\ndoDeposits: %v\ndoTxs: %v\nlayer: %v\nenvironment: %v\nTxCount: %v\n", showBal, doDeposits, doTxs, layer, testEnv, TxCount)
 
+	if showBal {
+
+		bal := GetBalances(_accounts, *ethcl1, *ethcl2, _ctx)
+		for _, b := range bal {
+			fmt.Printf("account %x has %v funds in l2 and %v funds in l1\n", b.hexaddr, b.layer2Funds, b.layer1Funds)
+
+		}
+	}
+
 	if doDeposits {
 		strlayer = "1"
 		ethcl, err := ethclient.Dial(tnEnv[testEnv+"_L"+strlayer])
