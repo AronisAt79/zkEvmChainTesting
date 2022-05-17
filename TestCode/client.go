@@ -93,7 +93,7 @@ func main() {
 		ks.Unlock(account, passw0rd)
 	}
 
-	fmt.Printf("CLIENT SETUP:\nshowBal: %v\ndoDeposits: %v\ndoTxs: %v\nlayer: %v\nenvironment: %v\nTxCount: %v\n", showBal, doDeposits, doTxs, layer, testEnv, TxCount)
+	//fmt.Printf("CLIENT SETUP:\nshowBal: %v\ndoDeposits: %v\ndoTxs: %v\nlayer: %v\nenvironment: %v\nTxCount: %v\n", showBal, doDeposits, doTxs, layer, testEnv, TxCount)
 
 	if showBal {
 
