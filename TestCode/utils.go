@@ -58,22 +58,19 @@ type dMsgData struct {
 	_data     []byte
 }
 
-func NewDmsgData(ks *keystore.KeyStore, miner string, v int64, ac accs, ec ethclient.Client, c ctx, r *rand.Rand, chainid *big.Int) (dMsgData, int, int) {
+func NewDmsgData(ks *keystore.KeyStore, v int64, ac accs, ec ethclient.Client, c ctx, r *rand.Rand, chainid *big.Int) (dMsgData, int, int) {
 	// func NewDmsgData(ks *keystore.KeyStore, v int64, ac accs, ec ethclient.Client, c ctx, chainid *big.Int) (dMsgData, int, int) {
 	si := r.Intn(len(ac)) // sender's index (from accs slice)
-	// si, _ := rand.Int(rand.Reader,len(ac))
 	sender := ac[si]
 	ri := r.Intn(len(ac)) // receiver's index (from accs slice)
 	// ri, _ := rand.Int(rand.Reader,len(ac))
-	// n0nce, _ := ec.NonceAt(c, sender.Address, nil)
-	// n0ncee := big.NewInt(int64(n0nce))
 	receiver := ac[si]
-	tokenAddress := common.HexToAddress("0x" + miner)
-	// tokenAddress :=  common.HexToAddress("0x936a70c0b28532aa22240dce21f89a8399d6ac60")
+	tokenAddress := common.HexToAddress("0x936a70c0b28532aa22240dce21f89a8399d6ac60")
 	bal := CalculateFunds(ec, c, sender)
 	txOpts, _ := bind.NewKeyStoreTransactorWithChainID(ks, sender, chainid)
 	_sendernonce, _ := ec.NonceAt(c, sender.Address, nil)
 	_tokenNonce, _ := ec.NonceAt(c, tokenAddress, nil)
+
 	fmt.Printf("tokenNonce: %v\nsenderNonce: %v\n", _tokenNonce, _sendernonce)
 	// aaa  := uint64(1)
 	// _nnc = _nnc
@@ -89,7 +86,7 @@ func NewDmsgData(ks *keystore.KeyStore, miner string, v int64, ac accs, ec ethcl
 	// tokenNonce := big.NewInt(int64(_tokenNonce))
 	senderNonce := big.NewInt(int64(_sendernonce))
 	tokenNonce := big.NewInt(int64(_tokenNonce))
-	txOpts.Value = big.NewInt(v * params.GWei)
+	// txOpts.Value = big.NewInt(v * params.GWei)
 	txOpts.Value = new(big.Int).Div(bal, big.NewInt(v))
 	// txOpts.GasLimit = uint64(50000)
 	txOpts.Nonce = senderNonce
@@ -100,7 +97,6 @@ func NewDmsgData(ks *keystore.KeyStore, miner string, v int64, ac accs, ec ethcl
 	})
 	fmt.Printf("estimated gas limit: %v\n", egl)
 	txOpts.GasLimit = uint64(float64(egl) * 10)
-	// txOpts.GasTipCap = big.NewInt(255000 * params.GWei)
 	txOpts.GasPrice, _ = ec.SuggestGasPrice(c)
 	return dMsgData{
 			txOpts,
