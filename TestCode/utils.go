@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
@@ -58,57 +59,42 @@ type dMsgData struct {
 	_data     []byte
 }
 
-func NewDmsgData(ks *keystore.KeyStore, miner string, v int64, ac accs, ec ethclient.Client, c ctx, r *rand.Rand, chainid *big.Int) (dMsgData, int, int) {
-	// func NewDmsgData(ks *keystore.KeyStore, v int64, ac accs, ec ethclient.Client, c ctx, chainid *big.Int) (dMsgData, int, int) {
+func NewDmsgData(ks *keystore.KeyStore, nonceAddr common.Address, v int64, ac accs, ec ethclient.Client, c ctx, r *rand.Rand, chainid *big.Int) (dMsgData, int, int) {
 	si := r.Intn(len(ac)) // sender's index (from accs slice)
-	// si, _ := rand.Int(rand.Reader,len(ac))
 	sender := ac[si]
 	ri := r.Intn(len(ac)) // receiver's index (from accs slice)
-	// ri, _ := rand.Int(rand.Reader,len(ac))
-	// n0nce, _ := ec.NonceAt(c, sender.Address, nil)
-	// n0ncee := big.NewInt(int64(n0nce))
 	receiver := ac[si]
-	tokenAddress := common.HexToAddress("0x" + miner)
-	// tokenAddress :=  common.HexToAddress("0x936a70c0b28532aa22240dce21f89a8399d6ac60")
 	bal := CalculateFunds(ec, c, sender)
 	txOpts, _ := bind.NewKeyStoreTransactorWithChainID(ks, sender, chainid)
 	_sendernonce, _ := ec.NonceAt(c, sender.Address, nil)
-	_tokenNonce, _ := ec.NonceAt(c, tokenAddress, nil)
-	fmt.Printf("tokenNonce: %v\nsenderNonce: %v\n", _tokenNonce, _sendernonce)
-	// aaa  := uint64(1)
-	// _nnc = _nnc
-	// -->Randomize the txOpta data nonce as a crypto random big int
-	// txOpts.Nonce = big.NewInt(int64(_nnc))
-	// dnonce, _ := crand.Int(crand.Reader, big.NewInt(1000000000))
-	// <--
-	// txOpts.Nonce, _ = crand.Int(crand.Reader, big.NewInt(1000000000))
-	// dnonce := big.NewInt(int64(_nnc))
-	// txOpts.Nonce, _ = crand.Int(crand.Reader, big.NewInt(1000000000))
-	// fmt.Printf("_nnc is calculated asL %v\n", _nnc)
-	// fmt.Printf(" txOpts.Nonce is: %v\n", txOpts.Nonce)
-	// tokenNonce := big.NewInt(int64(_tokenNonce))
 	senderNonce := big.NewInt(int64(_sendernonce))
-	tokenNonce := big.NewInt(int64(_tokenNonce))
-	txOpts.Value = big.NewInt(v * params.GWei)
-	txOpts.Value = new(big.Int).Div(bal, big.NewInt(v))
-	// txOpts.GasLimit = uint64(50000)
-	txOpts.Nonce = senderNonce
+	nonceAddress := nonceAddr
+	Nonce_uint64, _ := ec.NonceAt(c, nonceAddress, nil)
+	Nonce := big.NewInt(int64(Nonce_uint64))
+
+	dispMsgNonce, _ := hexutil.DecodeBig("0xffffff")
+
 	egl, _ := ec.EstimateGas(c, ethereum.CallMsg{
-		To: &tokenAddress,
-		// To: &sender.Address,
+		// To:   &contractAddress, >> returns: Served eth_estimateGas err="execution reverted"
+		To:   &sender.Address,
 		Data: []byte{0},
 	})
-	fmt.Printf("estimated gas limit: %v\n", egl)
+
+	txOpts.Value = new(big.Int).Div(bal, big.NewInt(v))
+	txOpts.Nonce = senderNonce
 	txOpts.GasLimit = uint64(float64(egl) * 10)
-	// txOpts.GasTipCap = big.NewInt(255000 * params.GWei)
 	txOpts.GasPrice, _ = ec.SuggestGasPrice(c)
+
+	fmt.Printf("DUMMY PRINT TO AVOID VARIABLE NOT USED ERROR: %v %v\n", Nonce, dispMsgNonce)
+
 	return dMsgData{
 			txOpts,
 			receiver.Address,
 			big.NewInt(100 * params.GWei),
 			big.NewInt(10000000000),
-			// txOpts.Nonce,
-			tokenNonce,
+			// senderNonce,
+			dispMsgNonce,
+			// Nonce,
 			[]byte{
 				0x0,
 			},
@@ -129,10 +115,8 @@ func CalculateFunds(ec ethclient.Client, c ctx, a accounts.Account) *big.Int {
 
 func NewTxData(ac accs, ec ethclient.Client, c ctx, r *rand.Rand) (txData, int, int) {
 	si := r.Intn(len(ac)) // sender's index (from accs slice)
-	// si, _ := rand.Int(rand.Reader,len(ac))
 	sender := ac[si]
 	ri := r.Intn(len(ac)) // receiver's index (from accs slice)
-	// ri, _ := rand.Int(rand.Reader,len(ac))
 	n0nce, _ := ec.NonceAt(c, sender.Address, nil)
 	receiver := ac[ri]
 	// _gasPrice, _ := ec.SuggestGasPrice(c)
@@ -165,22 +149,14 @@ func GetBalances(ac accs, ec1 ethclient.Client, ec2 ethclient.Client, c ctx) bal
 	_balances := balances{}
 	for _, _acc := range ac {
 		bal1 := CalculateFunds(ec1, c, _acc)
-		// fmt.Println(_acc.Address, "layer1", bal1)
 		bal2 := CalculateFunds(ec2, c, _acc)
-		// fmt.Println(_acc.Address, "layer2", bal2)
 
 		_balance := balance{
 			_acc.Address,
 			bal1,
 			bal2,
 		}
-		// fmt.Println(_balance)
 		_balances = append(_balances, _balance)
 	}
 	return _balances
 }
-
-// func KsSigner(ks keystore.KeyStore, a accounts.Account, passwd string, tx *types.Transaction, chainID *big.Int) (signerfn bind.SignerFn) {
-// 	signedTx, _ := ks.SignTxWithPassphrase(a, passwd, tx, chainID)
-// 	return signedTx
-// }
