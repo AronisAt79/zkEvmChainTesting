@@ -82,6 +82,7 @@ func NewDmsgData(ks *keystore.KeyStore, nonceAddr common.Address, v int64, ac ac
 
 	txOpts.Value = new(big.Int).Div(bal, big.NewInt(v))
 	txOpts.Nonce = senderNonce
+	// txOpts.Nonce = Nonce
 	txOpts.GasLimit = uint64(float64(egl) * 10)
 	txOpts.GasPrice, _ = ec.SuggestGasPrice(c)
 
@@ -93,8 +94,8 @@ func NewDmsgData(ks *keystore.KeyStore, nonceAddr common.Address, v int64, ac ac
 			big.NewInt(100 * params.GWei),
 			big.NewInt(10000000000),
 			// senderNonce,
-			dispMsgNonce,
-			// Nonce,
+			// dispMsgNonce,
+			Nonce,
 			[]byte{
 				0x0,
 			},
