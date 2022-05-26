@@ -35,6 +35,10 @@ var testEnv string
 var TxCount int
 var TxSleep string
 
+var oneDepositNoLoop bool
+var oneWithDrawNoLoop bool
+var balanceDivisor int64
+
 func init() {
 	flag.BoolVar(&initL2Funds, "initL2Funds", false, "boolean, initialize L2 funds")
 	flag.BoolVar(&doTxs, "doTxs", false, "boolean, if set, script will run simple Txs on selected layer, until exited")
@@ -45,6 +49,10 @@ func init() {
 	flag.StringVar(&testEnv, "testEnv", "REPLICA", "select environment as test target")
 	flag.IntVar(&TxCount, "TxCount", 1, "select number of Txs to execute")
 	flag.StringVar(&TxSleep, "TxSleep", "1s", "select number of seconds to pause inbetween Txs || example: -TxSleep='3s'")
+
+	flag.BoolVar(&oneDepositNoLoop, "oneDepositNoLoop", false, "boolean, send one deposit outside of loop")
+	flag.BoolVar(&oneWithDrawNoLoop, "oneWithDrawNoLoop", false, "boolean, send one oneWithDrawNoLoop outside of loop")
+	flag.Int64Var(&balanceDivisor, "balanceDivisor", 1000000, "int64, amount to transfer equals balance/balanceDivisor")
 }
 
 func main() {
@@ -62,7 +70,7 @@ func main() {
 	passw0rd := tnEnv["PASSWORD"]
 	lOnebridge := tnEnv["L1BRIDGEADDR"]
 	lTwobridge := tnEnv["L2BRIDGEADDR"]
-	miner = tnEnv["MINERADDR"]
+	// miner = tnEnv["MINERADDR"]
 
 	//Random source to select account(s)
 	source := rand.NewSource(time.Now().UnixNano())
@@ -106,7 +114,6 @@ func main() {
 
 	if initL2Funds {
 
-		minerAddress := common.HexToAddress(miner)
 		bridgeAddress := common.HexToAddress(lOnebridge)
 		bridge, err := zkevml1bridge.NewZkevml1bridge(bridgeAddress, ethcl1)
 		if err != nil {
@@ -118,7 +125,7 @@ func main() {
 		for len(zeros) != 0 {
 			zeros = nil
 			// Generate zkevml1bridge.DispatchMessage inputs, deposit 1/10000 to l2
-			disMsgData, si, _ := NewDmsgData(&ks, minerAddress, 100000, _accounts, *ethcl1, _ctx, r, l1ChainId)
+			disMsgData, si, _ := NewDmsgData(&ks, bridgeAddress, balanceDivisor, _accounts, *ethcl1, _ctx, r, l1ChainId)
 			fmt.Printf("account : %x || nonce: %v\n", _accounts[si].Address, disMsgData._nonce)
 			//Send transaction with generated bind.TransactOpts
 			tx, err := bridge.DispatchMessage(disMsgData._txOpts, disMsgData._to, disMsgData._fee, disMsgData._deadline, disMsgData._nonce, disMsgData._data)
@@ -165,7 +172,6 @@ func main() {
 			log.Fatal(err)
 		}
 
-		minerAddress := common.HexToAddress(miner)
 		bridgeAddress := common.HexToAddress(lOnebridge)
 		bridge, err := zkevml1bridge.NewZkevml1bridge(bridgeAddress, ethcl)
 		if err != nil {
@@ -174,7 +180,7 @@ func main() {
 		}
 
 		for ii := 1; ii <= TxCount; ii++ {
-			disMsgData, si, _ := NewDmsgData(&ks, minerAddress, 1000000, _accounts, *ethcl, _ctx, r, chainId)
+			disMsgData, si, _ := NewDmsgData(&ks, bridgeAddress, balanceDivisor, _accounts, *ethcl, _ctx, r, chainId)
 			fmt.Printf("account : %x\nDispatchMessageNonce: %v\nTxOptsNonce(This is always the sender account nonce): %v\n", _accounts[si].Address, disMsgData._nonce, disMsgData._txOpts.Nonce)
 			//Send transaction with generated bind.TransactOpts
 			tx, err := bridge.DispatchMessage(disMsgData._txOpts, disMsgData._to, disMsgData._fee, disMsgData._deadline, disMsgData._nonce, disMsgData._data)
@@ -194,7 +200,6 @@ func main() {
 
 			time.Sleep(TxSl)
 		}
-
 	}
 
 	if doWithDraws {
@@ -210,7 +215,6 @@ func main() {
 			log.Fatal(err)
 		}
 
-		minerAddress := common.HexToAddress(miner)
 		bridgeAddress := common.HexToAddress(lTwobridge)
 		bridge, err := zkevmmessagedispatcher.NewZkevmmessagedispatcher(bridgeAddress, ethcl)
 		if err != nil {
@@ -219,7 +223,7 @@ func main() {
 		}
 
 		for ii := 1; ii <= TxCount; ii++ {
-			disMsgData, si, _ := NewDmsgData(&ks, minerAddress, 1000000, _accounts, *ethcl, _ctx, r, chainId)
+			disMsgData, si, _ := NewDmsgData(&ks, bridgeAddress, balanceDivisor, _accounts, *ethcl, _ctx, r, chainId)
 			fmt.Printf("account : %x\nDispatchMessageNonce: %v\nTxOptsNonce(This is always the sender account nonce): %v\n", _accounts[si].Address, disMsgData._nonce, disMsgData._txOpts.Nonce)
 			//Send transaction with generated bind.TransactOpts
 			tx, err := bridge.DispatchMessage(disMsgData._txOpts, disMsgData._to, disMsgData._fee, disMsgData._deadline, disMsgData._nonce, disMsgData._data)
@@ -272,6 +276,84 @@ func main() {
 
 			time.Sleep(TxSl)
 			fmt.Printf("Sent %v Txs so far\n", ii)
+		}
+	}
+
+	if oneDepositNoLoop {
+		strlayer = "1"
+		ethcl, err := ethclient.Dial(tnEnv[testEnv+"_L"+strlayer])
+		if err != nil {
+			fmt.Println(err)
+			log.Fatal(err)
+		}
+		chainId, err := ethcl.NetworkID(_ctx)
+		if err != nil {
+			fmt.Println(err)
+			log.Fatal(err)
+		}
+
+		bridgeAddress := common.HexToAddress(lOnebridge)
+		bridge, err := zkevml1bridge.NewZkevml1bridge(bridgeAddress, ethcl)
+		if err != nil {
+			fmt.Println(err)
+			log.Fatal(err)
+		}
+
+		disMsgData, si, _ := NewDmsgData(&ks, bridgeAddress, balanceDivisor, _accounts, *ethcl, _ctx, r, chainId)
+		fmt.Printf("account : %x\nDispatchMessageNonce: %v\nTxOptsNonce(This is always the sender account nonce): %v\n", _accounts[si].Address, disMsgData._nonce, disMsgData._txOpts.Nonce)
+		//Send transaction with generated bind.TransactOpts
+		tx, err := bridge.DispatchMessage(disMsgData._txOpts, disMsgData._to, disMsgData._fee, disMsgData._deadline, disMsgData._nonce, disMsgData._data)
+		if err != nil {
+			fmt.Println(err)
+			// log.Fatal(err)
+		}
+
+		fmt.Printf("TxHash: %v\n", tx.Hash())
+		TxHashes = append(TxHashes, tx.Hash())
+
+		errr := ethcl.SendTransaction(_ctx, tx)
+		if errr != nil {
+			fmt.Println(errr)
+			// log.Fatal(err)
+		}
+	}
+
+	if oneWithDrawNoLoop {
+		strlayer = "2"
+		ethcl, err := ethclient.Dial(tnEnv[testEnv+"_L"+strlayer])
+		if err != nil {
+			fmt.Println(err)
+			log.Fatal(err)
+		}
+		chainId, err := ethcl.NetworkID(_ctx)
+		if err != nil {
+			fmt.Println(err)
+			log.Fatal(err)
+		}
+
+		bridgeAddress := common.HexToAddress(lTwobridge)
+		bridge, err := zkevml1bridge.NewZkevml1bridge(bridgeAddress, ethcl)
+		if err != nil {
+			fmt.Println(err)
+			log.Fatal(err)
+		}
+
+		disMsgData, si, _ := NewDmsgData(&ks, bridgeAddress, balanceDivisor, _accounts, *ethcl, _ctx, r, chainId)
+		fmt.Printf("account : %x\nDispatchMessageNonce: %v\nTxOptsNonce(This is always the sender account nonce): %v\n", _accounts[si].Address, disMsgData._nonce, disMsgData._txOpts.Nonce)
+		//Send transaction with generated bind.TransactOpts
+		tx, err := bridge.DispatchMessage(disMsgData._txOpts, disMsgData._to, disMsgData._fee, disMsgData._deadline, disMsgData._nonce, disMsgData._data)
+		if err != nil {
+			fmt.Println(err)
+			// log.Fatal(err)
+		}
+
+		fmt.Printf("TxHash: %v\n", tx.Hash())
+		TxHashes = append(TxHashes, tx.Hash())
+
+		errr := ethcl.SendTransaction(_ctx, tx)
+		if errr != nil {
+			fmt.Println(errr)
+			// log.Fatal(err)
 		}
 	}
 	//Set of dummy print statements to avoid unused variables error
