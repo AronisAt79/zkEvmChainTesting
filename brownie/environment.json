@@ -1,0 +1,15 @@
+{
+    "testEnvironments": "K8 REPLICA TESTNET",
+    "parentDir": "zkEvmChainTesting",
+    "keystoredir" : "keystore",
+    "deployments": "build/deployments/",
+    "keystorepass" : "password",
+    "rpcUrls" : {
+        "TESTNET_BASE" : "https://zkevmchaingeth1.efprivacyscaling.org/rpc/",
+        "REPLICA_BASE" : "https://zkevmchain-nick3.efprivacyscaling.org/rpc/",
+        "K8_BASE"      : "https://zkevmchain-k8s.pse-internal.com/rpc/",
+        "L1BRIDGEADDR" : "936a70c0b28532aa22240dce21f89a8399d6ac60",
+        "L2BRIDGEADDR" : "0000000000000000000000000000000000020000"
+    }
+
+}
