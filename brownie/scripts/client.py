@@ -107,7 +107,7 @@ def main():
                 proofCompleted = result != None
                 if proofCompleted:
                     # stop = int(time.time())
-                    with open('/home/marios/TxTraceCheck5.json', 'w') as writeme:
+                    with open('/home/ubuntu/zkEvmChainTesting/brownie/TxTraceCheck5.json', 'w') as writeme:
                         json.dump(tr, writeme)
                     duration = r.json()["result"]["duration"]/1000
                     stepResult["ProofDuration"] = duration
@@ -125,5 +125,5 @@ def main():
         #     json.dump(tr, writeme)
     # with open('/home/marios/TxTraceCheck5.json', 'w') as writeme:
     #     json.dump(tr, writeme)
-    with open('/home/marios/resultMULMOD5.json', 'w') as writeme:
+    with open('/home/ubuntu/zkEvmChainTesting/brownie/resultMULMOD5.json', 'w') as writeme:
         json.dump(benchResult, writeme)
