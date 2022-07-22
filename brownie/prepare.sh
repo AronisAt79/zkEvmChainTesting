@@ -1,6 +1,7 @@
 #!/bin/bash
 #set -x
 
+USER=$(whoami)
 ENV_FILE_NAME="environment.json"
 WORKING_DIR_NAME=$(basename $(pwd))
 NETWORK_ID=$1
@@ -24,8 +25,8 @@ install_pkgs() {
 }
 
 install_brownie() {
-    /home/ubuntu/.local/bin/pipx install eth-brownie
-    /home/ubuntu/.local/bin/pipx inject eth-brownie pandas
+    /home/$USER/.local/bin/pipx install eth-brownie
+    /home/$USER/.local/bin/pipx inject eth-brownie pandas
     source ~/.bashrc
 }
 
@@ -44,18 +45,15 @@ run_brownie_test () {
 }
 
 main() {
-    NETWORK_EXISTS=$(brownie networks list | grep -c ${NETWORK_ID}_BASE)
-    if [ $NETWORK_EXISTS -eq 0 ]; then
+    BROWNIE_EXISTS="/home/$USER/.local/bin/brownie"
+    if [ ! -f $BROWNIE_EXISTS ]; then
         install_pkgs
         install_brownie
         add_network
         run_brownie
         run_brownie_test
-    elif [ $NETWORK_EXISTS -gt 0 ]; then
-        run_brownie_test
     else
-        echo "Exit"
-        exit 1
+        run_brownie_test
     fi
 }
 
