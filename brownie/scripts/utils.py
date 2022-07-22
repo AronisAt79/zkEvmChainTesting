@@ -1,20 +1,55 @@
+from brownie import Check5
 from brownie.network import accounts
 from web3 import Web3
 from pathlib import Path
-import time
-import os
-import json
-import sys
+import time, os, json, sys, requests
+import pandas as pd
+from pprint import pprint
 
 
 def getEnv(filename):
     env = json.load(open(filename))
-
     return env
 
-def getBrownieCwd():
-    user = os.getlogin()
+def getUserInputs(env):
+    calibrate = input("calibrate opcode? (True/False) :") == "True"
+    op = input('opcode: ') or 'MULMOD'
+    testEnvs = env["testEnvironments"].split()
+    print("Select test environment\n(just hit enter for REPLICA, otherwise K8 or TESTNET):\n")
+    for i in range(len(testEnvs)):
+        print(f"{i} : {testEnvs[i]}")
+    testenv = testEnvs[int(input("insert environment index:") or 1)]
+    d = [ int(i) for i in env["degrees"].split() ]
+    degree = int(input("Select circuit degree. Must match the value PARAMS_PATH in coordinator service at docker compose file: \n"))
+    proof = input("query proofs? (True/False) :") == "True" 
+    if not calibrate:
+        numOfiterations = int(input("start number of opcode iterations: "))
+    else:
+        numOfiterations = None
+    step = int(input("step: "))
+    try:
+        stop = int(input("stop at: "))
+    except:
+        stop = 10000000
+        print("No hard stop was provided. Will run until interrupted with CTRL-C or a proof failure occurs")
     
+    return calibrate, op, d,testenv, degree, proof, numOfiterations, step, stop
+
+  
+def opCodes():
+    '''
+    Loads a pandas dataframe with implemented opcodes vs gas/circuit cost
+    '''
+    op = pd.read_csv('opcodesEVM',sep='|')
+    op=op.set_index('opcode')
+
+    return op
+
+# def getUser():
+#     user = os.getlogin()
+#     return user
+
+
 def loadMap(filename):
     map =  json.load(open())
     return map
@@ -39,17 +74,82 @@ def getProjectDir(env):
         print("Error: could not determine brownie project location")
         sys.exit(1)
 
+def sendTx(numOfiterations,contractInstance,owner):
+    tx = contractInstance.checkBatchYul(((numOfiterations),),{"from": owner})
+    
+    return tx
+
+def getTxTrace(tx):
+    traceDone = False
+    while not traceDone:
+        try:
+            tr = tx.trace
+            traceDone = True
+            print('Tx trace done')
+        except:
+            print("failed to get tx trace")
+    
+    return tr
 
 def getBlockGasCostFromTrace(tx,txtrace):
-    pass
+    gas_used = tx.gas_used
+    print(gas_used)
+    gasFromTrace = sum([i['gasCost'] for i in txtrace])
+    print(gasFromTrace)
+    print(gas_used-gasFromTrace)
 
 
 def getOCsGasCost(oc, txtrace):
-    numberOfOCsInBlock = 0
-    TotalGasOfOCs = 0
+    gasFromOC = sum([i['gasCost'] for i in txtrace if i['op'] == oc])
 
-def getBlockCircuitCostFromOCs(txtrace, oc=''):
+    return gasFromOC
+
+def getBlockCircuitCostFromOCs(opcodes,txtrace, op=''):
     '''Calculates the total block circuit cost. If opcode (op) is defined,
-       function returns the circuit cost contribution of the given opcode 
+       function also returns the circuit cost contribution of the given opcode
+       Takes in the opcodes dataframe from  opCodes(), a Tx trace and an opcode as
+       a string
     '''
-    pass
+    
+    totalBlockCircuitCost = sum([opcodes.loc[i['op']]['h'] for i in txtrace])
+    if op:
+        OpCircuitCost = sum([opcodes.loc[i['op']]['h'] for i in txtrace if i['op'] == op])
+    else:
+        OpCircuitCost = None
+
+    return totalBlockCircuitCost,OpCircuitCost
+
+def getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr,op,step):
+    stepResult = {}
+    stepResult["OpCodes"] = numOfiterations
+    stepResult["Block"] = tx.block_number
+    stepResult["GasUsed"] = tx.gas_used
+    data=f'{{"jsonrpc":"2.0", "method":"proof", "params":[{{"block":{tx.block_number},"rpc":"{sourceURL}", "retry":false, "param": "/testnet/{degree}.bin"}}], "id":{tx.block_number}}}'
+    proofCompleted = False
+    while not proofCompleted:
+        # print(f"Waiting for block {tx.block_number} proof")
+        r = requests.post(proverUrl,data)
+        error = 'error' in r.json().keys()
+        # pprint(r.json())
+        if error:
+            print(f'ERROR: Block: {tx.block_number} -- {r.json()["error"]}')
+            proofCompleted = True
+            proofFailed = error
+            stepResult["Error"] = r.json()["error"]
+        elif 'result' in r.json().keys():
+            proofFailed = False
+            result = r.json()['result']
+            proofCompleted = result != None
+            if proofCompleted:
+                # stop = int(time.time())
+                # with open(f'{resultsDir}/TxTrace{op}_{numOfiterations}.json', 'w') as writeme:
+                #     json.dump(tr, writeme)
+                duration = r.json()["result"]["duration"]/1000
+                stepResult["ProofDuration"] = duration
+                mins = (duration - duration%60)/60
+                pprint(r.json()['result'])
+                # print(f'Proof for block {tx.block_number} generated in {mins} minutes and {duration - 60*mins} seconds\n{r.json()["result"]}')
+                print(f'Proof for block {tx.block_number} with {numOfiterations} MULMODs : generated in {mins} minutes and {duration - 60*mins} seconds')
+
+
+    return stepResult,proofCompleted,proofFailed

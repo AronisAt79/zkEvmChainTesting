@@ -1,6 +1,8 @@
 {
     "testEnvironments": "K8 REPLICA TESTNET",
+    "degrees": "19 20 21 22 23 24",
     "parentDir": "zkEvmChainTesting",
+    "resultsdir": "testresults",
     "keystoredir" : "keystore",
     "deployments": "build/deployments/",
     "keystorepass" : "password",
