@@ -128,6 +128,16 @@ def processTxTrace(opcode,trace, opcodesDF):
     
     return opcodeH, blockH, opcodeG, blockG
 
+def getProverTasks(proverUrl):
+    '''
+    returns true if there are ongoing proofs (tasks with 'result' == None)
+    '''
+    data=f'{{"jsonrpc":"2.0", "method":"info", "params":[], "id":1}}'
+    r = requests.post(proverUrl,data)
+    tasks = r.json()['result']['tasks']
+    ongoingProofs = bool(len([ i['result'] for i in tasks if i["result"]==None]))
+    return ongoingProofs
+
 def getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr,op,step,opcodeDF):
     stepResult = {}
     stepResult["OpCodes"] = numOfiterations

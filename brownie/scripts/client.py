@@ -70,6 +70,13 @@ def main():
 
             print(f'We dont want to exceed 1M gas, so adjusting number of {op} executions. Will do {numOfiterations} for ~ 1M gas')            
 
+    print('Checking prover status')
+    ongoingProofs = True
+    while ongoingProofs:
+        ongoingProofs = ut.getProverTasks(proverUrl)
+    
+    print('Prover is now Idle. Proceeding...')
+
     proofFailed = False
 
     benchResult = []
@@ -97,6 +104,6 @@ def main():
     # with open(f'/home/{}/TxTraceCheck5.json', 'w') as writeme:
     #     json.dump(tr, writeme)
     with open(f'{resultsDir}/TxTrace-Degree-{degree}-{op}_{numOfiterations-step}.json', 'w') as writeme:
-                    json.dump(tr, writeme)
+        json.dump(tr, writeme)
     with open(f'{resultsDir}/Result-Degree-{degree}-{op}_{numOfiterations-step}.json', 'w') as writeme:
         json.dump(benchResult, writeme)
