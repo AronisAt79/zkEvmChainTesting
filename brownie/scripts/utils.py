@@ -119,11 +119,22 @@ def getBlockCircuitCostFromOCs(opcodes,txtrace, op=''):
 
     return totalBlockCircuitCost,OpCircuitCost
 
-def getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr,op,step):
+def processTxTrace(opcode,trace, opcodesDF):
+    opsexecuted = [i['op'] for i in trace]
+    opcodeH = sum([opcodesDF.loc[op]['h'] for op in opsexecuted if op==opcode])
+    blockH = sum([opcodesDF.loc[op]['h'] for op in opsexecuted])
+    opcodeG = sum([opcodesDF.loc[op]['g'] for op in opsexecuted if op==opcode])
+    blockG = sum([opcodesDF.loc[op]['g'] for op in opsexecuted])
+    
+    return opcodeH, blockH, opcodeG, blockG
+
+def getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr,op,step,opcodeDF):
     stepResult = {}
     stepResult["OpCodes"] = numOfiterations
     stepResult["Block"] = tx.block_number
     stepResult["GasUsed"] = tx.gas_used
+    stepResult[f"{op}-h"],stepResult["TotalBlock-h"], stepResult["OpcodeGasFromTrace"], stepResult["TxGasFromTrace"] = processTxTrace(op,tr, opcodeDF)
+    stepResult[f'%h by {op}'] = stepResult[f"{op}-h"]/stepResult["TotalBlock-h"]
     data=f'{{"jsonrpc":"2.0", "method":"proof", "params":[{{"block":{tx.block_number},"rpc":"{sourceURL}", "retry":false, "param": "/testnet/{degree}.bin"}}], "id":{tx.block_number}}}'
     proofCompleted = False
     while not proofCompleted:

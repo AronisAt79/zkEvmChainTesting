@@ -22,7 +22,7 @@ keyfiles = [i for i in os.listdir(keyfilesDir) if "UTC" in i]
 accounts.load(f"{keyfilesDir}/{keyfiles[0]}", "password")
 owner = accounts[0]
 jsonmap = json.load(open(f"{projectDir}/brownie/{env['deployments']}/map.json"))
-opcodes = ut.opCodes()
+opcodeDF = ut.opCodes()
 user = os.getlogin()
 
 def main():
@@ -48,13 +48,13 @@ def main():
         gasFromOC = ut.getOCsGasCost(op,tr)
         # PERCENTAGE OF GAS SPENT FOR SPECIFIC OPCODE EXECUTION AGAINST Tx GAS_USED
         gasRatio = gasFromOC/gasUsed 
-        totalCircuitCost, OpCodeCircuitCost = ut.getBlockCircuitCostFromOCs(opcodes,tr,op)
+        totalCircuitCost, OpCodeCircuitCost = ut.getBlockCircuitCostFromOCs(opcodeDF,tr,op)
         OcContrib = OpCodeCircuitCost/totalCircuitCost
         MaxCircuitCostsPerDegree = {i:2**i for i in d}
 
         # DETERMINE THE THEORETICAL MAX MUMBER OF OPCODEs WE CAN EXECUTE WITH GIVEN CIRCUIT
         circuitCostOPs = MaxCircuitCostsPerDegree[degree]*OcContrib
-        opcodesInGivenK = int(circuitCostOPs/opcodes.loc[op]["h"])
+        opcodesInGivenK = int(circuitCostOPs/opcodeDF.loc[op]["h"])
         theoreticalGas = int(gasUsed*(opcodesInGivenK/50000))
 
         # ROUND DOWN TO PREVIOUS THOUSAND
@@ -65,7 +65,7 @@ def main():
         print(f'of {opcodesInGivenK} {op}s with a total block gas of {theoreticalGas}')
 
         if theoreticalGas > 1000000:
-            opcodesInGivenK = (gasRatio*1000000)/opcodes.loc[op]["g"]
+            opcodesInGivenK = (gasRatio*1000000)/opcodeDF.loc[op]["g"]
             numOfiterations = opcodesInGivenK - opcodesInGivenK%1000
 
             print(f'We dont want to exceed 1M gas, so adjusting number of {op} executions. Will do {numOfiterations} for ~ 1M gas')            
@@ -83,7 +83,7 @@ def main():
         # start = int(time.time())
         # data=f'{{"jsonrpc":"2.0", "method":"proof", "params":[{tx.block_number},"{sourceURL}", false], "id":{tx.block_number}}}'
         if proof:
-            stepResult,proofCompleted,proofFailed=ut.getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr, op, step)
+            stepResult,proofCompleted,proofFailed=ut.getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr, op, step,opcodeDF)
         else:
              stepResult = {}
             
@@ -96,7 +96,7 @@ def main():
 
     # with open(f'/home/{}/TxTraceCheck5.json', 'w') as writeme:
     #     json.dump(tr, writeme)
-    with open(f'{resultsDir}/TxTrace{op}_{numOfiterations-step}.json', 'w') as writeme:
+    with open(f'{resultsDir}/TxTrace-Degree-{degree}-{op}_{numOfiterations-step}.json', 'w') as writeme:
                     json.dump(tr, writeme)
-    with open(f'{resultsDir}/Result-{op}_{numOfiterations-step}.json', 'w') as writeme:
+    with open(f'{resultsDir}/Result-Degree-{degree}-{op}_{numOfiterations-step}.json', 'w') as writeme:
         json.dump(benchResult, writeme)
