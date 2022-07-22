@@ -160,7 +160,7 @@ def getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr,op
                 mins = (duration - duration%60)/60
                 pprint(r.json()['result'])
                 # print(f'Proof for block {tx.block_number} generated in {mins} minutes and {duration - 60*mins} seconds\n{r.json()["result"]}')
-                print(f'Proof for block {tx.block_number} with {numOfiterations} MULMODs : generated in {mins} minutes and {duration - 60*mins} seconds')
+                print(f'Proof for block {tx.block_number} with {numOfiterations} {op}s : generated in {mins} minutes and {duration - 60*mins} seconds')
 
 
     return stepResult,proofCompleted,proofFailed
