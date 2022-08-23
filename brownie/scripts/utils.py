@@ -5,6 +5,8 @@ from pathlib import Path
 import time, os, json, sys, requests
 import pandas as pd
 from pprint import pprint
+import logging
+logging.basicConfig(filename='/var/tmp/client.log', encoding='utf-8', level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def getEnv(filename):
@@ -12,16 +14,16 @@ def getEnv(filename):
     return env
 
 def getUserInputs(env):
-    calibrate = input("calibrate opcode? (True/False) :") == "True"
+    calibrate = input("calibrate opcode? (True/False): ") == "True"
     op = input('opcode: ') or 'MULMOD'
     testEnvs = env["testEnvironments"].split()
     print("Select test environment\n(just hit enter for REPLICA, otherwise K8 or TESTNET):\n")
     for i in range(len(testEnvs)):
-        print(f"{i} : {testEnvs[i]}")
-    testenv = testEnvs[int(input("insert environment index:") or 1)]
+        print(f"{i}: {testEnvs[i]}")
+    testenv = testEnvs[int(input("insert environment index: ") or 1)]
     d = [ int(i) for i in env["degrees"].split() ]
-    degree = int(input("Select circuit degree. Must match the value PARAMS_PATH in coordinator service at docker compose file: \n"))
-    proof = input("query proofs? (True/False) :") == "True" 
+    degree = int(input("Select circuit degree. Must match the value PARAMS_PATH in coordinator service at docker compose file:\n"))
+    proof = input("query proofs? (True/False): ") == "True" 
     if not calibrate:
         numOfiterations = int(input("start number of opcode iterations: "))
     else:
@@ -171,6 +173,7 @@ def getProofState(proverUrl,sourceURL,tx,degree,numOfiterations,resultsDir,tr,op
                 pprint(r.json()['result'])
                 # print(f'Proof for block {tx.block_number} generated in {mins} minutes and {duration - 60*mins} seconds\n{r.json()["result"]}')
                 print(f'Proof for block {tx.block_number} with {numOfiterations} {op}s : generated in {mins} minutes and {duration - 60*mins} seconds')
+                logging.info('Proof for Block=%s with k=%i and opcode=%s with iterations=%s used Gas_used=%i and generated in %i mins and %i secs or Totaltime=%i secs', tx.block_number, degree, op, numOfiterations, tx.gas_used, mins, duration - 60*mins, duration)
 
 
     return stepResult,proofCompleted,proofFailed
