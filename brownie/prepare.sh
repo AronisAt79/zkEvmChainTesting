@@ -41,6 +41,10 @@ run_brownie () {
 }
 
 run_brownie_test () {
+    echo $PATH | grep '/.local/bin'
+    if [ $? -ne 0 ]; then
+        source ~/.profile
+    fi
     brownie run scripts/client.py --network ${NETWORK_ID}_BASE
 }
 
