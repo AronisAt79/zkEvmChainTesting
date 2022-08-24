@@ -13,7 +13,7 @@ if [ ! $WORKING_DIR_NAME = "brownie" ]; then
 fi
 
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 <K8|TESTNET|REPLICA> <99>"
+    echo "Usage: $0 <K8|TESTNET|REPLICA|TA> <99>"
     exit 1
 fi
 
@@ -27,7 +27,7 @@ install_pkgs() {
 install_brownie() {
     /home/$USER/.local/bin/pipx install eth-brownie
     /home/$USER/.local/bin/pipx inject eth-brownie pandas
-    source ~/.bashrc
+    source ~/.profile
 }
 
 add_network() {
