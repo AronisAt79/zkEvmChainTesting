@@ -1,4 +1,4 @@
-from brownie import Check5, CheckSdiv
+from brownie import CheckSdiv
 from brownie.network import accounts
 from scripts import utils as ut
 from pprint import pprint
@@ -33,9 +33,6 @@ def main():
     proverUrl = env["rpcUrls"][f'{testenv}'"_BASE"]+"prover"
 
     # INSTANTIATE CONTRACT OBJECTS
-    checkaddr5 = jsonmap[cid]["Check5"][0]
-    check5 = Check5.at(checkaddr5)
-
     checksdivaddr5 = jsonmap[cid]["CheckSdiv"][0]
     checksdiv = CheckSdiv.at(checksdivaddr5)
 
@@ -98,11 +95,6 @@ def main():
 
         benchResult.append(stepResult)
 
-        # with open('/home/marios/TxTraceCheck5.json', 'w') as writeme:
-        #     json.dump(tr, writeme)
-
-    # with open(f'/home/{}/TxTraceCheck5.json', 'w') as writeme:
-    #     json.dump(tr, writeme)
     with open(f'{resultsDir}/TxTrace-Degree-{degree}-{op}_{numOfiterations-step}.json', 'w') as writeme:
         json.dump(tr, writeme)
     with open(f'{resultsDir}/Result-Degree-{degree}-{op}_{numOfiterations-step}.json', 'w') as writeme:
