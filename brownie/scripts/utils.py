@@ -1,4 +1,3 @@
-from brownie import Check5
 from brownie.network import accounts
 from web3 import Web3
 from pathlib import Path

@@ -1,4 +1,4 @@
-from brownie import Check, Check2, Check3, Check4, Check5, CheckSdiv
+from brownie import CheckSdiv
 from brownie.network import accounts
 from web3 import Web3
 from pathlib import Path
@@ -21,9 +21,4 @@ def main():
     accounts.load(f"{keyfilesDir}/{keyfiles[0]}", "password")
     owner = accounts[0]
 
-    # check = Check.deploy({"from": owner})
-    # check2 = Check2.deploy({"from": owner})
-    # check3 = Check3.deploy({"from": owner})
-    # check4 = Check4.deploy({"from": owner})
-    check5 = Check5.deploy({"from": owner})    
     checksdiv = CheckSdiv.deploy({"from": owner})
